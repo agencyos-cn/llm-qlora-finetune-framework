@@ -1,97 +1,211 @@
-# 大模型 QLoRA 微调工具
+# LLM QLoRA Fine-tuning Framework
 
-这是一个通用的大模型微调工具，支持 Qwen 全系列、Llama 全系列、GLM 全系列、DeepSeek 全系列以及任何开源 Hugging Face 模型。
+<div align="center">
 
-## 功能特性
+[![License](https://img.shields.io/github/license/agencyos-cn/llm-qlora-finetune-framework?style=flat-square)](./LICENSE)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue?style=flat-square)](https://www.python.org/downloads/)
+[![Stars](https://img.shields.io/github/stars/agencyos-cn/llm-qlora-finetune-framework.svg?style=social&label=Star)](https://github.com/agencyos-cn/llm-qlora-finetune-framework)
+[![Forks](https://img.shields.io/github/forks/agencyos-cn/llm-qlora-finetune-framework.svg?style=social&label=Fork)](https://github.com/agencyos-cn/llm-qlora-finetune-framework)
 
-- ✅ 支持多种大模型架构
-- ✅ 基于 QLoRA 算法，高效微调
-- ✅ 集成训练、合并、转换功能
-- ✅ 支持量化以减少显存占用
+**A Universal Large Language Model QLoRA Fine-tuning Framework Supporting Multiple Model Architectures**
 
-## 使用方法（超级简单）
+[English](./README.md) · [中文](./README_zh.md) · [官网](https://agencyos.cn) · [文档](https://agencyos.cn/docs)
 
-### 1. 切换模型
+</div>
 
-只需要修改 [config.py](file:根目录/llm_qlora_train/config.py) 里的一行：
+## 🚀 Features
 
-```python
-BASE_MODEL_PATH = "你的模型ID或本地路径"
+- ✅ **Universal Support**: Compatible with Qwen, Llama, GLM, DeepSeek, and other mainstream model architectures
+- ✅ **Efficient Training**: Based on QLoRA algorithm for efficient fine-tuning with reduced GPU memory usage
+- ✅ **Complete Pipeline**: Integrated training, merging, and conversion capabilities
+- ✅ **Easy Deployment**: Supports conversion to GGUF format for LM Studio and other inference engines
+- ✅ **Quantization**: Built-in 4-bit quantization support for smaller models and faster inference
+- ✅ **Scalable**: Flexible configuration system supporting various model sizes and training requirements
+
+## 📊 Project Structure
+
+```
+llm-qlora-finetune-framework/
+├── config.py                 # Configuration file with model & training parameters
+├── run_train.py              # Training script for QLoRA fine-tuning
+├── run_merge.py              # Script to merge base model with LoRA adapter
+├── run_gguf.py               # Conversion script to GGUF format for LM Studio
+├── install.bat               # Installation script for Windows environments
+├── my_data.jsonl             # Example training data file (JSONL format)
+├── README.md                 # Documentation
+└── LICENSE                   # License information
 ```
 
-### 2. 准备数据
+## 🛠️ Quick Start
 
-准备 `my_data.jsonl` 文件（每行一条）：
+### Prerequisites
+
+- Python 3.8+
+- At least 12GB VRAM (recommended 24GB+ for larger models)
+- CUDA-compatible GPU (NVIDIA)
+
+### 1. Clone and Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/agencyos-cn/llm-qlora-finetune-framework.git
+cd llm-qlora-finetune-framework
+
+# Install dependencies
+python install.bat  # For Windows
+# OR
+pip install transformers torch peft bitsandbytes accelerate trl datasets llama-cpp-python
+```
+
+### 2. Prepare Your Data
+
+Create a training dataset in JSONL format (`my_data.jsonl`):
 
 ```json
-{"instruction":"你的指令","input":"补充内容","output":"标准输出"}
+{"instruction": "Explain quantum computing", "input": "", "output": "Quantum computing is a type of computation that harnesses the physical phenomena of quantum mechanics..."}
+{"instruction": "Write a poem about AI", "input": "", "output": "In silicon dreams and circuits bright, Where algorithms dance with light..."}
 ```
 
-### 3. 执行流程
+### 3. Configure Training Parameters
 
-1. 运行 [install.bat](file:根目录/llm_qlora_train/install.bat) 安装环境
-2. 运行 [run_train.py](file:根目录/llm_qlora_train/run_train.py) 训练
-3. 运行 [run_merge.py](file:根目录/llm_qlora_train/run_merge.py) 合并
-4. 运行 [run_gguf.py](file:根目录/llm_qlora_train/run_gguf.py) 转 LM Studio 格式
+Edit [config.py](./config.py) to customize your training:
 
-## 两个 pip 命令的核心区别（最终总结）
+```python
+# Select your base model
+BASE_MODEL_PATH = "Qwen/Qwen2-7B-Instruct"  # Or "meta-llama/Llama-2-7b-chat-hf", etc.
 
-| 命令 | 用途 | 能否微调 |
-|------|------|----------|
-| `pip install transformers torch sentencepiece` | 仅推理 / 对话，运行模型 | ❌ 不能训练 |
-| `pip install transformers torch peft bitsandbytes accelerate trl datasets` | 完整训练环境 | ✅ 支持 LoRA/QLoRA 微调 |
+# Set training parameters
+DATASET_PATH = "my_data.jsonl"
+LORA_R = 32
+LORA_ALPHA = 64
+LORA_DROPOUT = 0.05
+TRAIN_BATCH_SIZE = 1
+LEARNING_RATE = 2e-4
+TRAIN_EPOCHS = 3
+MAX_SEQ_LEN = 2048
+```
 
-## 环境安装
+### 4. Run the Training Pipeline
 
-运行 [install.bat](file:根目录/llm_qlora_train/install.bat) 自动安装所需依赖：
+Execute the scripts in order:
 
 ```bash
-install.bat
+# 1. Train the model
+python run_train.py
+
+# 2. Merge the LoRA adapter with the base model
+python run_merge.py
+
+# 3. Convert to GGUF format for use with LM Studio
+python run_gguf.py
 ```
 
-或者手动安装完整训练环境：
+## 📋 Configuration Guide
+
+### Model Selection
+
+Modify [config.py](./config.py) to switch between different models:
+
+```python
+# Qwen Series
+BASE_MODEL_PATH = "Qwen/Qwen2-7B-Instruct"
+
+# Llama Series
+BASE_MODEL_PATH = "meta-llama/Meta-Llama-3-8B-Instruct"
+
+# GLM Series
+BASE_MODEL_PATH = "THUDM/glm-4-9b-chat"
+
+# Local Model Path
+BASE_MODEL_PATH = "./models/local_model"
+```
+
+### Training Parameters
+
+| Parameter | Description | Recommended Value |
+|-----------|-------------|-------------------|
+| `LORA_R` | Rank of LoRA matrices | 16-64 depending on model size |
+| `LORA_ALPHA` | Scaling factor | Usually 2x `LORA_R` |
+| `LORA_DROPOUT` | Dropout rate | 0.05-0.1 |
+| `TRAIN_BATCH_SIZE` | Batch size per device | 1-4 depending on VRAM |
+| `GRADIENT_ACCUMULATION` | Gradient accumulation steps | 8-16 |
+| `LEARNING_RATE` | Learning rate | 2e-4 to 5e-5 |
+| `TRAIN_EPOCHS` | Number of training epochs | 3-5 |
+| `MAX_SEQ_LEN` | Maximum sequence length | 2048-4096 |
+
+## 🧩 Supported Model Architectures
+
+- [x] **Qwen** (Alibaba Cloud) - Qwen, Qwen2, Qwen2-Math, Qwen2.5, Qwen3, etc.
+- [x] **Llama** (Meta) - Llama, Llama2, Llama3, CodeLlama, etc.
+- [x] **GLM** (Zhipu AI) - GLM, GLM2, GLM3, ChatGLM, etc.
+- [x] **DeepSeek** (DeepSeek) - DeepSeek, DeepSeek-Coder, etc.
+- [x] **Mistral** (Mistral AI) - Mistral, Mixtral, etc.
+- [x] **Baichuan** (Baichuan) - Baichuan, Baichuan2, etc.
+- [x] **Yi** (01.AI) - Yi, Yi-Coder, etc.
+- [ ] **More coming soon!**
+
+## 🔧 Advanced Usage
+
+### Custom Training Data Format
+
+The framework accepts training data in JSONL format with the following fields:
+
+- `instruction`: The instruction or query
+- `input`: Optional additional context or input
+- `output`: The desired response
+
+Example:
+
+```json
+{
+  "instruction": "Translate the following English text to Chinese:",
+  "input": "Hello, how are you today?",
+  "output": "你好，今天怎么样？"
+}
+```
+
+### Multi-GPU Training
+
+For multi-GPU setups, consider using DeepSpeed or FSDP with Accelerate:
 
 ```bash
-pip install transformers torch peft bitsandbytes accelerate trl datasets llama_cpp_python
+accelerate config  # Configure accelerate
+accelerate launch run_train.py  # Launch with multi-GPU support
 ```
 
-## 配置文件说明
+## 🤝 Contributing
 
-主要配置项位于 [config.py](file:根目录/llm_qlora_train/config.py)，包括：
+We welcome contributions to the LLM QLoRA Fine-tuning Framework! Here's how you can help:
 
-- `BASE_MODEL_PATH`: 基础模型路径或HuggingFace模型ID
-- `TRAIN_DATA_PATH`: 训练数据路径
-- `OUTPUT_DIR`: 训练输出目录
-- `LORA_RANK`: LoRA 秩
-- `LORA_ALPHA`: LoRA 缩放因子
-- `LORA_DROPOUT`: LoRA dropout率
-- `BATCH_SIZE`: 批处理大小
-- `GRADIENT_ACCUMULATION_STEPS`: 梯度累积步数
-- `EPOCHS`: 训练轮数
-- `LEARNING_RATE`: 学习率
-- `CUTOFF_LEN`: 输入序列最大长度
-- `LORA_SAVE_PATH`: LoRA模型保存路径
-- `MERGED_MODEL_PATH`: 合并后模型保存路径
-- `GGUF_OUTPUT_NAME`: GGUF格式输出文件名
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 文件说明
+See our [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
 
-- [run_train.py](file:根目录/llm_qlora_train/run_train.py): 执行模型训练
-- [run_merge.py](file:根目录/llm_qlora_train/run_merge.py): 合并基础模型和LoRA适配器
-- [run_gguf.py](file:根目录/llm_qlora_train/run_gguf.py): 转换为GGUF格式用于LM Studio
-- [config.py](file:根目录/llm_qlora_train/config.py): 配置文件
-- [install.bat](file:根目录/llm_qlora_train/install.bat): 依赖安装脚本
+## 📄 License
 
-## 支持的模型
+This project is licensed under the Apache 2.0 License - see the [LICENSE](./LICENSE) file for details.
 
-- ✅ Qwen 全系列
-- ✅ Llama 全系列
-- ✅ GLM 全系列
-- ✅ DeepSeek 全系列
-- ✅ 任何开源 Hugging Face 模型
+## 🙏 Acknowledgments
 
-## 极简使用说明书（3 步上手）
+- Thanks to Hugging Face for providing the Transformers library
+- Inspired by the QLoRA paper and implementation
+- Special thanks to the open-source community for continuous improvements
 
-1. **配置**: 修改 [config.py](file:根目录/llm_qlora_train/config.py) 中的模型路径和训练参数
-2. **准备数据**: 创建 `my_data.jsonl` 文件并填入训练数据
-3. **执行**: 按顺序运行 [install.bat](file:根目录/llm_qlora_train/install.bat) → [run_train.py](file:根目录/llm_qlora_train/run_train.py) → [run_merge.py](file:根目录/llm_qlora_train/run_merge.py) → [run_gguf.py](file:根目录/llm_qlora_train/run_gguf.py)
+## 💼 About AgencyOS
+
+AgencyOS is an open-source platform for building autonomous AI agents. This framework is part of our mission to democratize AI technology.
+
+---
+
+<div align="center">
+
+**Made with ❤️ by [AgencyOS](https://agencyos.cn)**
+
+[![](https://img.shields.io/badge/GitHub-AgencyOS-181717?style=for-the-badge&logo=github)](https://github.com/agencyos-cn)
+[![](https://img.shields.io/badge/Website-AgencyOS-0066CC?style=for-the-badge&logo=google-chrome)](https://agencyos.cn)
+
+</div>
